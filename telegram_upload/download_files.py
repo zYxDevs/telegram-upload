@@ -18,8 +18,7 @@ def pipe_file(read_file_name: str, write_file: BinaryIO):
     """Read a file by its file name and write in another file already open."""
     with open(read_file_name, "rb") as read_file:
         while True:
-            data = read_file.read(CHUNK_FILE_SIZE)
-            if data:
+            if data := read_file.read(CHUNK_FILE_SIZE):
                 write_file.write(data)
             else:
                 break

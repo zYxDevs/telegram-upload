@@ -27,7 +27,7 @@ directory = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../')
 
 class AnyArg(object):
     """https://stackoverflow.com/questions/20428750/pythons-assert-called-with-is-there-a-wildcard-character"""
-    def __eq__(a, b):
+    def __eq__(self, b):
         return True
 
 

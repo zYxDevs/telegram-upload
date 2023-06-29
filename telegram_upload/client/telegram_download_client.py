@@ -42,9 +42,7 @@ class TelegramDownloadClient(TelegramClient):
         for download_file in download_files:
             if download_file.size > free_disk_usage():
                 raise TelegramUploadNoSpaceError(
-                    'There is no disk space to download "{}". Space required: {}'.format(
-                        download_file.file_name, sizeof_fmt(download_file.size - free_disk_usage())
-                    )
+                    f'There is no disk space to download "{download_file.file_name}". Space required: {sizeof_fmt(download_file.size - free_disk_usage())}'
                 )
             progress, bar = get_progress_bar('Downloading', download_file.file_name, download_file.size)
             file_name = download_file.file_name
@@ -71,11 +69,7 @@ class TelegramDownloadClient(TelegramClient):
             iv: bytes = None,
             msg_data: tuple = None) -> typing.Optional[bytes]:
         if not part_size_kb:
-            if not file_size:
-                part_size_kb = 64  # Reasonable default
-            else:
-                part_size_kb = utils.get_appropriated_part_size(file_size)
-
+            part_size_kb = utils.get_appropriated_part_size(file_size) if file_size else 64
         part_size = int(part_size_kb * 1024)
         if part_size % MIN_CHUNK_SIZE != 0:
             raise ValueError(

@@ -28,7 +28,7 @@ class TestTelegramDownloadClient(unittest.TestCase):
         ]
         self.client.iter_messages = mock_iter_messages
         files = list(self.client.find_files(entity))
-        self.assertEqual(mock_iter_messages.return_value[0:2], files)
+        self.assertEqual(mock_iter_messages.return_value[:2], files)
 
     def test_download_files(self):
         m = Mock()

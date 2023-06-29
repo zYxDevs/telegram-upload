@@ -27,9 +27,9 @@ if TYPE_CHECKING:
 def is_valid_file(file, error_logger=None):
     error_message = None
     if not os.path.lexists(file):
-        error_message = 'File "{}" does not exist.'.format(file)
+        error_message = f'File "{file}" does not exist.'
     elif not os.path.getsize(file):
-        error_message = 'File "{}" is empty.'.format(file)
+        error_message = f'File "{file}" is empty.'
     if error_message and error_logger is not None:
         error_logger(error_message)
     return error_message is None
@@ -113,7 +113,7 @@ class NoDirectoriesFiles(UploadFilesBase):
     def get_iterator(self):
         for file in self.files:
             if os.path.isdir(file):
-                raise TelegramInvalidFile('"{}" is a directory.'.format(file))
+                raise TelegramInvalidFile(f'"{file}" is a directory.')
             else:
                 yield file
 
@@ -135,7 +135,7 @@ class LargeFilesBase(UploadFilesBase):
 
 class NoLargeFiles(LargeFilesBase):
     def process_large_file(self, file):
-        raise TelegramInvalidFile('"{}" file is too large for Telegram.'.format(file))
+        raise TelegramInvalidFile(f'"{file}" file is too large for Telegram.')
 
 
 class File(FileIO):
@@ -185,12 +185,12 @@ class File(FileIO):
             try:
                 thumb = get_file_thumb(self.path)
             except ThumbError as e:
-                click.echo('{}'.format(e), err=True)
+                click.echo(f'{e}', err=True)
         elif self.is_custom_thumbnail:
             if not isinstance(self._thumbnail, str):
-                raise TypeError('Invalid type for thumbnail: {}'.format(type(self._thumbnail)))
+                raise TypeError(f'Invalid type for thumbnail: {type(self._thumbnail)}')
             elif not os.path.lexists(self._thumbnail):
-                raise TelegramInvalidFile('{} thumbnail file does not exists.'.format(self._thumbnail))
+                raise TelegramInvalidFile(f'{self._thumbnail} thumbnail file does not exists.')
             thumb = self._thumbnail
         return thumb
 
@@ -249,6 +249,8 @@ class SplitFiles(LargeFilesBase):
         zfill = int(math.log10(10)) + 1
         for part in range(parts):
             size = total_size - (part * self.client.max_file_size) if part >= parts - 1 else self.client.max_file_size
-            splitted_file = SplitFile(self.client, file, size, '{}.{}'.format(file_name, str(part).zfill(zfill)))
+            splitted_file = SplitFile(
+                self.client, file, size, f'{file_name}.{str(part).zfill(zfill)}'
+            )
             splitted_file.seek(self.client.max_file_size * part, split_seek=True)
             yield splitted_file

@@ -11,16 +11,16 @@ def free_disk_usage(directory='.'):
 
 
 def truncate(text, max_length):
-    return (text[:max_length - 3] + '...') if len(text) > max_length else text
+    return f'{text[:max_length - 3]}...' if len(text) > max_length else text
 
 
 def grouper(n, iterable):
     it = iter(iterable)
     while True:
-        chunk = tuple(itertools.islice(it, n))
-        if not chunk:
+        if chunk := tuple(itertools.islice(it, n)):
+            yield chunk
+        else:
             return
-        yield chunk
 
 
 def sizeof_fmt(num, suffix='B'):
@@ -42,10 +42,7 @@ def scantree(path, follow_symlinks=False):
 
 def async_to_sync(coro):
     loop = asyncio.get_event_loop()
-    if loop.is_running():
-        return coro
-    else:
-        return loop.run_until_complete(coro)
+    return coro if loop.is_running() else loop.run_until_complete(coro)
 
 
 async def aislice(iterator, limit):
