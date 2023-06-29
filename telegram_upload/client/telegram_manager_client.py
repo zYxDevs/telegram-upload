@@ -48,7 +48,7 @@ def get_message_file_attribute(message):
 def phone_match(value):
     match = re.match(r'\+?[0-9.()\[\] \-]+', value)
     if match is None:
-        raise ValueError('{} is not a valid phone'.format(value))
+        raise ValueError(f'{value} is not a valid phone')
     return value
 
 
@@ -63,7 +63,7 @@ def parse_proxy_string(proxy: Union[str, None]):
         return None
     proxy_parsed = urlparse(proxy)
     if not proxy_parsed.scheme or not proxy_parsed.hostname or not proxy_parsed.port:
-        raise TelegramProxyError('Malformed proxy address: {}'.format(proxy))
+        raise TelegramProxyError(f'Malformed proxy address: {proxy}')
     if proxy_parsed.scheme == 'mtproxy':
         return ('mtproxy', proxy_parsed.hostname, proxy_parsed.port, proxy_parsed.username)
     try:
@@ -77,7 +77,7 @@ def parse_proxy_string(proxy: Union[str, None]):
         'socks5': socks.SOCKS5,
     }.get(proxy_parsed.scheme)
     if proxy_type is None:
-        raise TelegramProxyError('Unsupported proxy type: {}'.format(proxy_parsed.scheme))
+        raise TelegramProxyError(f'Unsupported proxy type: {proxy_parsed.scheme}')
     return (proxy_type, proxy_parsed.hostname, proxy_parsed.port, True,
             proxy_parsed.username, proxy_parsed.password)
 

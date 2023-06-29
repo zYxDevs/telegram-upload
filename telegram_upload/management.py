@@ -47,12 +47,12 @@ def get_file_display_name(message):
     from_user = message.sender and isinstance(message.sender, User)
     if from_user:
         display_name_parts.append('by')
-    if from_user and message.sender.first_name:
-        display_name_parts.append(message.sender.first_name)
-    if from_user and message.sender.last_name:
-        display_name_parts.append(message.sender.last_name)
-    if from_user and message.sender.username:
-        display_name_parts.append(f'@{message.sender.username}')
+        if message.sender.first_name:
+            display_name_parts.append(message.sender.first_name)
+        if message.sender.last_name:
+            display_name_parts.append(message.sender.last_name)
+        if message.sender.username:
+            display_name_parts.append(f'@{message.sender.username}')
     display_name_parts.append(f'{message.date}')
     return ' '.join(display_name_parts)
 
@@ -83,20 +83,15 @@ class MutuallyExclusiveOption(click.Option):
         self.mutually_exclusive = set(kwargs.pop('mutually_exclusive', []))
         help = kwargs.get('help', '')
         if self.mutually_exclusive:
-            kwargs['help'] = help + (
-                ' NOTE: This argument is mutually exclusive with'
-                ' arguments: [{}].'.format(self.mutually_exclusive_text)
-            )
+            kwargs[
+                'help'
+            ] = f'{help} NOTE: This argument is mutually exclusive with arguments: [{self.mutually_exclusive_text}].'
         super(MutuallyExclusiveOption, self).__init__(*args, **kwargs)
 
     def handle_parse_result(self, ctx, opts, args):
         if self.mutually_exclusive.intersection(opts) and self.name in opts:
             raise click.UsageError(
-                "Illegal usage: `{}` is mutually exclusive with "
-                "arguments `{}`.".format(
-                    self.name,
-                    self.mutually_exclusive_text
-                )
+                f"Illegal usage: `{self.name}` is mutually exclusive with arguments `{self.mutually_exclusive_text}`."
             )
 
         return super(MutuallyExclusiveOption, self).handle_parse_result(
@@ -114,7 +109,7 @@ class MutuallyExclusiveOption(click.Option):
 @click.argument('files', nargs=-1)
 @click.option('--to', default=None, help='Phone number, username, invite link or "me" (saved messages). '
                                          'By default "me".')
-@click.option('--config', default=None, help='Configuration file to use. By default "{}".'.format(CONFIG_FILE))
+@click.option('--config', default=None, help=f'Configuration file to use. By default "{CONFIG_FILE}".')
 @click.option('-d', '--delete-on-success', is_flag=True, help='Delete local file after successful upload.')
 @click.option('--print-file-id', is_flag=True, help='Print the id of the uploaded file after the upload.')
 @click.option('--force-file', is_flag=True, help='Force send as a file. The filename will be preserved '
@@ -194,7 +189,7 @@ def upload(files, to, config, delete_on_success, print_file_id, force_file, forw
 @click.command()
 @click.option('--from', '-f', 'from_', default='',
               help='Phone number, username, chat id or "me" (saved messages). By default "me".')
-@click.option('--config', default=None, help='Configuration file to use. By default "{}".'.format(CONFIG_FILE))
+@click.option('--config', default=None, help=f'Configuration file to use. By default "{CONFIG_FILE}".')
 @click.option('-d', '--delete-on-success', is_flag=True,
               help='Delete telegram message after successful download. Useful for creating a download queue.')
 @click.option('-p', '--proxy', default=None,
@@ -241,14 +236,14 @@ if __name__ == '__main__':
     sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
     commands = {'upload': upload_cli, 'download': download_cli}
     if len(sys.argv) < 2:
-        sys.stderr.write('A command is required. Available commands: {}\n'.format(
-            ', '.join(commands)
-        ))
+        sys.stderr.write(
+            f"A command is required. Available commands: {', '.join(commands)}\n"
+        )
         sys.exit(1)
     if sys.argv[1] not in commands:
-        sys.stderr.write('{} is an invalid command. Valid commands: {}\n'.format(
-            sys.argv[1], ', '.join(commands)
-        ))
+        sys.stderr.write(
+            f"{sys.argv[1]} is an invalid command. Valid commands: {', '.join(commands)}\n"
+        )
         sys.exit(1)
     fn = commands[sys.argv[1]]
     sys.argv = [sys.argv[0]] + sys.argv[2:]

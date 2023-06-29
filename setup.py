@@ -73,9 +73,9 @@ def get_python_versions(string_range):
 def get_python_classifiers(versions):
     for version in range(2, 4):
         if not next(iter(filter(lambda x: int(float(x)) != version, versions.copy())), False):
-            versions.add('{} :: Only'.format(version))
+            versions.add(f'{version} :: Only')
             break
-    return ['Programming Language :: Python :: %s' % version for version in versions]
+    return [f'Programming Language :: Python :: {version}' for version in versions]
 
 
 def get_platform_classifiers(platform):
@@ -87,14 +87,19 @@ def get_platform_classifiers(platform):
         'unix': ('Unix',),
         'bsd': ('POSIX', 'BSD')
     }[platform]
-    return ['Operating System :: {}'.format(' :: '.join(parts[:i+1]))
-            for i in range(len(parts))]
+    return [
+        f"Operating System :: {' :: '.join(parts[:i + 1])}"
+        for i in range(len(parts))
+    ]
 
 
 # paths
 here = os.path.abspath(os.path.dirname(__file__))
-readme = glob.glob('{}/{}*'.format(here, 'README'))[0]
-scripts = [os.path.join('scripts', os.path.basename(script)) for script in glob.glob('{}/scripts/*'.format(here))]
+readme = glob.glob(f'{here}/README*')[0]
+scripts = [
+    os.path.join('scripts', os.path.basename(script))
+    for script in glob.glob(f'{here}/scripts/*')
+]
 
 # Package data
 packages = get_packages(here)
@@ -108,10 +113,12 @@ status_name = ['Planning', 'Pre-Alpha', 'Alpha', 'Beta',
 classifiers = copy.copy(CLASSIFIERS)
 classifiers.extend(get_python_classifiers(python_versions))
 classifiers.extend(chain(*[get_platform_classifiers(platform) for platform in PLATFORMS]))
-classifiers.extend([
-    'Natural Language :: {}'.format(NATURAL_LANGUAGE),
-    'Development Status :: {} - {}'.format(STATUS_LEVEL, status_name),
-])
+classifiers.extend(
+    [
+        f'Natural Language :: {NATURAL_LANGUAGE}',
+        f'Development Status :: {STATUS_LEVEL} - {status_name}',
+    ]
+)
 
 
 setup(

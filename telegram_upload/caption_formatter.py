@@ -53,32 +53,31 @@ class Duration:
 
     @property
     def for_humans(self) -> str:
-        words = ["year", "day", "hour", "minute", "second"]
-
         if not self.seconds:
             return "now"
+        m, s = divmod(self.seconds, 60)
+        h, m = divmod(m, 60)
+        d, h = divmod(h, 24)
+        y, d = divmod(d, 365)
+
+        time = [y, d, h, m, s]
+
+        duration = []
+
+        words = ["year", "day", "hour", "minute", "second"]
+
+        for x, i in enumerate(time):
+            if i == 1:
+                duration.append(f"{i} {words[x]}")
+            elif i > 1:
+                duration.append(f"{i} {words[x]}s")
+
+        if len(duration) == 1:
+            return duration[0]
+        elif len(duration) == 2:
+            return f"{duration[0]} and {duration[1]}"
         else:
-            m, s = divmod(self.seconds, 60)
-            h, m = divmod(m, 60)
-            d, h = divmod(h, 24)
-            y, d = divmod(d, 365)
-
-            time = [y, d, h, m, s]
-
-            duration = []
-
-            for x, i in enumerate(time):
-                if i == 1:
-                    duration.append(f"{i} {words[x]}")
-                elif i > 1:
-                    duration.append(f"{i} {words[x]}s")
-
-            if len(duration) == 1:
-                return duration[0]
-            elif len(duration) == 2:
-                return f"{duration[0]} and {duration[1]}"
-            else:
-                return ", ".join(duration[:-1]) + " and " + duration[-1]
+            return ", ".join(duration[:-1]) + " and " + duration[-1]
 
     def __int__(self) -> int:
         return self.seconds

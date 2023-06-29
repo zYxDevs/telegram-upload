@@ -51,13 +51,12 @@ async def anext(iterator: typing.AsyncIterator[typing.Any], *args, **kwargs
     use_default = False
     default = None
 
-    if len(args) > 0:
+    if args:
         default = args[0]
         use_default = True
-    else:
-        if 'default' in kwargs:
-            default = kwargs['default']
-            use_default = True
+    elif 'default' in kwargs:
+        default = kwargs['default']
+        use_default = True
 
     try:
         return await iterator.__anext__()

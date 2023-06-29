@@ -60,8 +60,8 @@ class TelegramUploadClient(TelegramClient):
                                  progress_callback=progress, attributes=file.file_attributes)
         if hasattr(message.media, 'document') and file.file_size != message.media.document.size:
             raise TelegramUploadDataLoss(
-                'Remote document size: {} bytes (local file size: {} bytes)'.format(
-                    message.media.document.size, file.file_size))
+                f'Remote document size: {message.media.document.size} bytes (local file size: {file.file_size} bytes)'
+            )
         return message
 
     async def _send_media(self, entity, file: File, progress):
@@ -119,7 +119,6 @@ class TelegramUploadClient(TelegramClient):
     def send_files(self, entity, files: Iterable[File], delete_on_success=False, print_file_id=False,
                    forward=(), send_as_media: bool = False):
         has_files = False
-        messages = []
         for file in files:
             has_files = True
             thumb = file.get_thumbnail()
@@ -129,18 +128,20 @@ class TelegramUploadClient(TelegramClient):
                 if thumb and not file.is_custom_thumbnail and os.path.lexists(thumb):
                     os.remove(thumb)
             if message is None:
-                click.echo('Failed to upload file "{}"'.format(file.file_name), err=True)
+                click.echo(f'Failed to upload file "{file.file_name}"', err=True)
             if message and print_file_id:
-                click.echo('Uploaded successfully "{}" (file_id {})'.format(file.file_name,
-                                                                            pack_bot_file_id(message.media)))
+                click.echo(
+                    f'Uploaded successfully "{file.file_name}" (file_id {pack_bot_file_id(message.media)})'
+                )
             if message and delete_on_success:
-                click.echo('Deleting "{}"'.format(file))
+                click.echo(f'Deleting "{file}"')
                 os.remove(file.path)
             if message:
                 self.forward_to(message, forward)
         if not has_files:
             raise MissingFileError('Files do not exist.')
-        return messages
+        else:
+            return []
 
     async def upload_file(
             self: 'TelegramClient',
@@ -279,15 +280,15 @@ class TelegramUploadClient(TelegramClient):
 
                 if not isinstance(part, bytes):
                     raise TypeError(
-                        'file descriptor returned {}, not bytes (you must '
-                        'open the file in bytes mode)'.format(type(part)))
+                        f'file descriptor returned {type(part)}, not bytes (you must open the file in bytes mode)'
+                    )
 
                 # `file_size` could be wrong in which case `part` may not be
                 # `part_size` before reaching the end.
                 if len(part) != part_size and part_index < part_count - 1:
                     raise ValueError(
-                        'read less than {} before reaching the end; either '
-                        '`file_size` or `read` are wrong'.format(part_size))
+                        f'read less than {part_size} before reaching the end; either `file_size` or `read` are wrong'
+                    )
 
                 pos += len(part)
 
@@ -315,9 +316,13 @@ class TelegramUploadClient(TelegramClient):
                     name=f"telegram-upload-file-{part_index}"
                 )
             # Wait for all tasks to finish
-            await asyncio.wait([
-                task for task in asyncio.all_tasks() if task.get_name().startswith(f"telegram-upload-file-")
-            ])
+            await asyncio.wait(
+                [
+                    task
+                    for task in asyncio.all_tasks()
+                    if task.get_name().startswith("telegram-upload-file-")
+                ]
+            )
         if is_big:
             return types.InputFileBig(file_id, part_count, file_name)
         else:
@@ -347,12 +352,12 @@ class TelegramUploadClient(TelegramClient):
         except InvalidBufferError as e:
             if e.code == 429:
                 # Too many connections
-                click.echo(f'Too many connections to Telegram servers.', err=True)
+                click.echo('Too many connections to Telegram servers.', err=True)
             else:
                 raise
         except ConnectionError:
             # Retry to send the file part
-            click.echo(f'Detected connection error. Retrying...', err=True)
+            click.echo('Detected connection error. Retrying...', err=True)
         else:
             self.upload_semaphore.release()
         if result is None and retry < MAX_RECONNECT_RETRIES:
@@ -368,8 +373,7 @@ class TelegramUploadClient(TelegramClient):
             if progress_callback:
                 await helpers._maybe_await(progress_callback(pos, file_size))
         else:
-            raise RuntimeError(
-                'Failed to upload file part {}.'.format(part_index))
+            raise RuntimeError(f'Failed to upload file part {part_index}.')
 
     def decrease_upload_semaphore(self):
         """
@@ -393,12 +397,12 @@ class TelegramUploadClient(TelegramClient):
             return
         self.decrease_upload_semaphore()
         try:
-            click.echo(f'Reconnecting to Telegram servers...')
+            click.echo('Reconnecting to Telegram servers...')
             await asyncio.wait_for(self.connect(), RECONNECT_TIMEOUT)
-            click.echo(f'Reconnected to Telegram servers.')
+            click.echo('Reconnected to Telegram servers.')
         except InvalidBufferError:
-            click.echo(f'InvalidBufferError connecting to Telegram servers.', err=True)
+            click.echo('InvalidBufferError connecting to Telegram servers.', err=True)
         except asyncio.TimeoutError:
-            click.echo(f'Timeout connecting to Telegram servers.', err=True)
+            click.echo('Timeout connecting to Telegram servers.', err=True)
         finally:
             self.reconnecting_lock.release()
